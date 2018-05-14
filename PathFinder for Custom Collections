@@ -5,7 +5,7 @@
 search="custom-*.cfg"
 filebase="/opt/retropie/configs/all/emulationstation/collections"
 
-cd filebase
+cd "$filebase"
 filefind=$(find -name "$search" 2>/dev/null)
 
 # Rebuild Filenames, if $i starts with "./" an new filename is found
