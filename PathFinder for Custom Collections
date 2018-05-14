@@ -1,0 +1,41 @@
+#!/bin/bash
+# Working example!
+# by cyperghost
+# Without using IFS or other bad tricks!
+search="custom-*.cfg"
+filebase="/opt/retropie/configs/all/emulationstation/collections"
+
+cd filebase
+filefind=$(find -name "$search" 2>/dev/null)
+
+# Rebuild Filenames, if $i starts with "./" an new filename is found
+# Array postion 1 is always empty, we may can use that later
+for i in $filefind; do
+    if [[ ${i:0:2} == "./" ]]; then
+        array+=("$ii")
+        ii=
+        ii="$i"
+     else
+        ii="$ii $i"
+     fi
+done
+     array[0]="$ii"
+
+# Create array for dialog
+for i in "${array[@]}"; do
+    dialog_array+=("$i" "${i:9:-4}")
+done
+
+unset array
+
+# Begin Dialog
+cmd=(dialog --backtitle " Custom Collection Pathfinder v1.0" \
+            --title " Select Custom Collection " \
+            --ok-label "Select " \
+            --cancel-label "Exit to ES" \
+            --no-tags \
+            --menu "There are $((${#dialog_array[@]}/2)) collection files available:" 16 70 16)
+choices=$("${cmd[@]}" "${dialog_array[@]}" 2>&1 >/dev/tty)
+# End Dialog
+
+echo "$choices"
