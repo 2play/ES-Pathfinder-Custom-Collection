@@ -96,7 +96,7 @@ function file_search() {
 
     case $level in
 
-        1) unset array
+        1)
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
                filefind=$(find -name "$rom_name" -type f 2>/dev/null)
@@ -106,7 +106,7 @@ function file_search() {
            [[ -z $filefind ]] && file_search 2
         ;;
 
-        2) unset array
+        2)
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
                system_extension=$(system_extension "$rom_system")
@@ -127,7 +127,7 @@ function file_search() {
            [[ -z $filefind ]] && file_search 3
         ;;
 
-        3) unset array
+        3)
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
                system_extension=$(system_extension "$rom_system")
@@ -151,7 +151,7 @@ function file_search() {
 
         ;;
 
-        4) unset array
+        4)
            if [[ -d $ROMBASE_DIR ]] && [[ $ROMBASE_DIR == $rom_base ]]; then
                cd "$rom_base"
                filefind=$(find -iname "$rom_name" -type f 2>/dev/null)
@@ -171,7 +171,7 @@ function file_search() {
            [[ -z $filefind ]] && file_search 5
        ;;
 
-        5) unset array
+        5)
            if [[ -d $ROMBASE_DIR ]] && [[ $ROMBASE_DIR == $rom_base ]]; then
                cd "$rom_base"
                system_extension=$(system_extension "$rom_system")
@@ -189,10 +189,10 @@ function file_search() {
                fi
            fi
 
-           [[ -z $filefind ]] && unset array
+           # [[ -z $filefind ]] && file_search 6
        ;;
 
-        6) unset array
+        6)
            if [[ -d $ROMBASE_DIR ]]; then
                cd "$ROMBASE_DIR"
                filefind=$(find -iname "$rom_no_brkts*" -type f ! -iregex ".*\.\(srm\|state*\|auto*\nv\hi\)" 2>/dev/null)
