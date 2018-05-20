@@ -185,7 +185,7 @@ function file_search() {
 
                if [[ -z $filefind ]]; then
                    system_extension=$(system_extension "$rom_system")
-                   [[ -z $system_extension ]] && continue
+                   [[ -z $system_extension ]] && return
                    filefind=$(find -iname "$rom_no_ext*" -iregex "$system_extension" -type f 2>/dev/null)
                fi
 
