@@ -80,7 +80,6 @@ function system_extension () {
         snes) echo ".*\.\(7z\|bin\|smc\|sfc\|fig\|swc\|mgd\|zip\)" ;;
         vectrex) echo ".*\.\(7z\|vec\|gam\|bin\|zip\)" ;;
         zxspectrum) echo ".*\.\(7z\|sh\|sna\|szx\|z80\|tap\|tzx\|gz\|udi\|mgt\|img\|trd\|scl\|dsk\|zip\|rzx\)" ;;
-        *) echo "not found" ;;
 
     esac
 }
@@ -185,7 +184,8 @@ function file_search() {
                filefind=$(find -name "$rom_name" -type f 2>/dev/null)
 
                if [[ -z $filefind ]]; then
-                   [[ $system_extension == "not found" ]] && break
+                   system_extension=$(system_extension "$rom_system")
+                   [[ -z $system_extension ]] && continue
                    filefind=$(find -iname "$rom_no_ext*" -iregex "$system_extension" -type f 2>/dev/null)
                fi
 
@@ -367,8 +367,6 @@ while read line; do
     rom_no_brkts="${rom_no_ext%% (*}"    # ROMs Name without any brackets
     rom_system="${rom_path##*/}"         # ROMs system extracted out of path
 
-    [[ $rom_no_brkts == $rom_name ]] && rom_no_brkts="$rom_no_ext"
-
     # Start file investigation
     # You can set level 1 to 4
     # 1-simple to 4-advanced
@@ -377,14 +375,14 @@ while read line; do
 
     # Results:
     if [[ ${#array[@]} -eq 0 ]]; then
-        record "File not found: $line" "0"
+        record "File not found: $line" "1"
     elif [[ ${array[0]} == $line ]]; then
-        record  "Found level 1: ${array[@]}" "0"
+        record  "Found level 1: ${array[@]}" "1"
     elif [[ ${#array[@]} -eq 1 ]]; then
-         record "Found write with sed: $line -- ${array[*]}" "0"
+         record "Found write with sed: $line -- ${array[*]}" "1"
          sed -i -e "$filepos"c"$array" "$collection_file"
     elif [[ ${#array[@]} -gt 1 ]]; then
-        record "Dialog hold ${#array[@]} files: $line -- ${array[*]}" "0"
+        record "Dialog hold ${#array[@]} files: $line -- ${array[*]}" "1"
         temp_array+=("${#array[@]}")
         temp_array+=("$line")
         temp_array+=("$filepos")
@@ -425,7 +423,7 @@ idx="${temp_array[0]}"
 
 for i in "${temp_array[@]}"; do
 
-    record "$z -- $idx: $i" "0"
+    record "$z -- $idx: $i" "2"
 
     if [[ $z -lt $idx ]]; then
         array+=("$i")
@@ -444,4 +442,3 @@ done
 
         dialog_romselection
         sed -i -e "$filepos"c"$choices" "$collection_file"
-
