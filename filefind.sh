@@ -128,6 +128,7 @@ function file_search() {
 
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
+               rom_name="${rom_name//]/\\]}" # Bug fixing to escape ]
                filefind=$(find -name "$rom_name" -type f 2>/dev/null)
                [[ -n $filefind ]] && array[0]="$rom_path${filefind#.*}"
            fi
@@ -214,6 +215,7 @@ function file_search() {
 
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
+               rom_name="${rom_name//]/\\]}" # Bug fixing to escape ]
                filefind=$(find -name "$rom_name" -type f 2>/dev/null)
                [[ -n $filefind ]] && array[0]="$rom_path${filefind#.*}"
            fi
