@@ -6,7 +6,7 @@
 # iname, iregex vs name, regex is independent of upper lower cases
 #
 
-readonly VERSION="1.01_052218"
+readonly VERSION="1.10_060918"
 readonly TITLE="Pathfinder 4 Custom Collections"
 readonly ROMBASE_DIR="/home/pi/RetroPie/roms"
 readonly COLLECTION_DIR="/opt/retropie/configs/all/emulationstation/collections"
@@ -112,9 +112,10 @@ function build_find_array() {
 # level 2.2=super intermediate: /path/system/*rom*.{systemext}
 # level 3.1=arcade: /path/rom.{systemext}
 # level 3.2=arcade: /path/rom*.{systemext}
-# level 4 == level 1 simple 1:1 find (autmatic)
-# experimental level 4.1=advanced: /path/rom*.{systemext}
-# experimental level 4.2=lastresort: /path/*rom*
+# level 4=slight advanced: /path/system/rom_first_word*.{systemext}
+# level 5 == like level 1 simple 1:1 find (autmatic)
+# experimental level 6.1=advanced: /path/rom*.{systemext}
+# experimental level 6.2=lastresort: /path/*rom*
 
 function file_search() {
 
@@ -128,8 +129,8 @@ function file_search() {
 
            if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
                cd "$rom_path"
-               filefind=$(find -name "$rom_name" -type f 2>/dev/null)
-               [[ -n $filefind ]] && array[0]="$rom_path${filefind#.*}"
+               filefind=$(find -name "$rom_mask_brkts" -type f 2>/dev/null)
+               [[ -n $filefind ]] && array[0]="file found"
            fi
 
            [[ -z $filefind ]] && file_search 2
@@ -205,27 +206,66 @@ function file_search() {
                fi
              fi
 
-           [[ -z $filefind ]] && unset array
+           [[ -z $filefind ]] && file_search 4
        ;;
 
-
         4)
-           # This is LEVEL 4 search - this are direct hits
+           # This level 4 search - First word of ROMName is used
+           # This will generate massive hits in some cases (Super Mario...)
+           # Therefore I just search in system folder for this!
 
-           if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
+           if [[ -d $ROMBASE_DIR/$rom_system ]]; then
+               rom_path="$ROMBASE_DIR/$rom_system"
                cd "$rom_path"
-               filefind=$(find -name "$rom_name" -type f 2>/dev/null)
-               [[ -n $filefind ]] && array[0]="$rom_path${filefind#.*}"
+               system_extension=$(system_extension "$rom_system")
+
+               filefind=$(find -iname "$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null)
+
+               if [[ -z $filefind ]]; then
+                   rom_no_brkts="${rom_no_brkts//[^[:alnum:].]/\*}"
+                   for i in "${ignore_list[@]}"; do
+                       rom_no_brkts="${rom_no_brkts//$i/\*}"
+                   done
+
+                   rom_no_brkts="${rom_no_brkts%% *}"    # Only last ROM word!
+
+                   filefind=$(find -iname "*$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null) 
+
+               fi
+
+               if [[ -n $filefind ]]; then
+                   # Build Array for files
+                   build_find_array "$filefind"
+
+                   # Remove ./ from filenames and add pathes to array
+                   z=0
+                   for i in "${array[@]}"; do
+                       array[z]="$rom_path${i#.*}"
+                       z=$((z+1))
+                   done
+               fi
            fi
 
-           [[ -z $filefind ]] && file_search 5
+           [[ -z $filefind ]] && unset array
         ;;
 
         5)
-           # This is LEVEL 5 of file search - search in BASE folders
+           # This is LEVEL 5 search - this are direct hits
+
+           if [[ -d $ROMBASE_DIR/$rom_system ]] && [[ $ROMBASE_DIR/$rom_system == $rom_path ]]; then
+               cd "$rom_path"
+               filefind=$(find -name "$rom_mask_brkts" -type f 2>/dev/null)
+               [[ -n $filefind ]] && array[0]="file found"
+           fi
+
+           [[ -z $filefind ]] && file_search 6
+        ;;
+
+        6)
+           # This is LEVEL 6 of file search - search in BASE folders
            # This is a special search level
-           # Search 5.1: filename without brackets for first try am determinated extension only
-           # Search 5.2: filename with stripped down characters
+           # Search 6.1: filename without brackets for first try am determinated extension only
+           # Search 6.2: filename with stripped down characters
 
            if [[ -d $ROMBASE_DIR ]]; then
                rom_base="$ROMBASE_DIR"
@@ -263,6 +303,7 @@ function file_search() {
 
     esac
 }
+
 # ---- Dialog Functions ----
 
 # Dialog Error
@@ -378,8 +419,18 @@ function dialog_romselection() {
 # ------------------------------------ M A I N - P R O G R A M M -------------------------------------
 # ----------------------------------------------------------------------------------------------------
 
-dialog_error "This programm will check your custom collections if they are....\
-              Please...."
+dialog_error "This programm will check your custom collections and changes pathes to ROM\
+             \nThe purpose is clear... We can share now our custom collections, without\
+             \nediting them manually. In most cases all is done by automatic.\n\
+             \nThis script offers 3 ways of search levels:\
+             \nSimple Search: Search in it's system and varies file names for good hits\
+             \n  So you may find Tetris (JUE).gb if the collection name was Tetris.zip\
+             \n  you may find mslug.zip located in system FBA if it was in ARCADE\
+             \n  you not find Alex Kidd located in MEGADRIVE if it was in MASTERSYSTEM\
+             \n\nAdvanced Search: Searches in base ROM folder for filenames, there will be\
+             lots of hits, so you can select wanted file manually!
+             \n\nRegionChange: Is "same" as Simple Search but lefts first filesearch stage!
+             \n\n>>>> Please.... give feedback - Yours cyperghost --- Version $VERSION"
 
 # ----------------------------------------------------------------------------------------------------
 # ---------------------------- Get collection files and build valid array ----------------------------
@@ -416,12 +467,18 @@ collection_file="$COLLECTION_DIR${collection_file#.*}"
 dialog --title " Choose search method " \
 --backtitle " $VERSION " \
 --extra-button --extra-label "Exit" \
+--help-button --help-label "Change Region" \
 --ok-label "Simple Search" \
 --cancel-label "Advanced Search" \
---yesno "\nI would prefer the simple search engine!\nI recommend to do simple search first and then use advanced search in 2nd try.\nYou, too?" 10 60
+--yesno \
+          "\nI would prefer the simple search engine!\nI recommend to do simple search first - use advanced search in 2nd try.\
+          \nThe CHANGE REGION Button is only usefull for console games. Arcade games\naren't affected by this!\n\
+          \nPlease consider the ADVANCED SEARCH and the REGION CHANGE option as experimental features with risk of false hits!\
+          \n\nMake your decision! Are you ready?" 16 76
 
 filesearch=$?
-[[ filesearch -eq 1 ]] && filesearch=4
+[[ filesearch -eq 1 ]] && filesearch=5
+[[ filesearch -eq 2 ]] && filesearch=2
 [[ filesearch -eq 0 ]] && filesearch=1
 [[ filesearch -eq 3 ]] && exit
 
@@ -443,6 +500,7 @@ while read line; do
     #
     ((filepos++))
     rom_name="$(basename "$line")"       # Pure ROMs name with it's extension
+    rom_mask_brkts="${rom_name//[/?}"    # This masks opening square brackets to get level 1 hit
     rom_path="$(dirname "$line")"        # This is ROMs path with system
     rom_base="$(dirname "$rom_path")"    # This represents all systemspathes
     rom_no_ext="${rom_name%.*}"          # ROM without extension
@@ -460,13 +518,13 @@ while read line; do
     # Results:
     if [[ ${#array[@]} -eq 0 ]]; then
         record "File not found: $line" "1"
-    elif [[ ${array[0]} == $line ]]; then
-        record  "Found level 1: ${array[@]}" "1"
+    elif [[ ${array[0]} == "file found" ]]; then
+        record  "Found level 1: $line" "0"
     elif [[ ${#array[@]} -eq 1 ]]; then
-         record "Found write with sed: $line -- ${array[*]}" "1"
+         record "Found write with sed: $line -- ${array[*]}" "0"
          sed -i -e "$filepos"c"$array" "$collection_file"
     elif [[ ${#array[@]} -gt 1 ]]; then
-        record "Dialog hold ${#array[@]} files: $line -- ${array[*]}" "1"
+        record "Dialog hold ${#array[@]} files: $line -- ${array[*]}" "0"
         temp_array+=("${#array[@]}")
         temp_array+=("$line")
         temp_array+=("$filepos")
