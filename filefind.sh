@@ -10,7 +10,7 @@ readonly VERSION="1.10_060918"
 readonly TITLE="Pathfinder 4 Custom Collections"
 readonly ROMBASE_DIR="/home/pi/RetroPie/roms"
 readonly COLLECTION_DIR="/opt/retropie/configs/all/emulationstation/collections"
-readonly ignore_list=("the" "The" "and" "is" "II" "III")
+readonly ignore_list=("the" "The" "and" "is" "III" "II" "I")
 
 # Possible Backups
 readonly BACKUP_DIR="$(cd "$(dirname "$0")" && pwd)/collection_backup"
@@ -151,12 +151,12 @@ function file_search() {
                filefind=$(find -iname "$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null)
 
                if [[ -z $filefind ]]; then
-                   rom_no_brkts="${rom_no_brkts//[^[:alnum:].]/\*}"
+                   rom_no_brkts_temp="${rom_no_brkts//[^[:alnum:].]/\*}"
                    for i in "${ignore_list[@]}"; do
-                       rom_no_brkts="${rom_no_brkts//$i/\*}"
+                       rom_no_brkts_temp="${rom_no_brkts_temp//$i/\*}"
                    done
 
-                   filefind=$(find -iname "*$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null) 
+                   filefind=$(find -iname "*$rom_no_brkts_temp*" -iregex "$system_extension" -type f 2>/dev/null) 
 
                fi
 
@@ -219,19 +219,8 @@ function file_search() {
                cd "$rom_path"
                system_extension=$(system_extension "$rom_system")
 
-               filefind=$(find -iname "$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null)
-
-               if [[ -z $filefind ]]; then
-                   rom_no_brkts="${rom_no_brkts//[^[:alnum:].]/\*}"
-                   for i in "${ignore_list[@]}"; do
-                       rom_no_brkts="${rom_no_brkts//$i/\*}"
-                   done
-
-                   rom_no_brkts="${rom_no_brkts%% *}"    # Only last ROM word!
-
-                   filefind=$(find -iname "*$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null) 
-
-               fi
+                   rom_no_brkts_temp="${rom_no_brkts%% *}"    # Only last ROM word!
+                   filefind=$(find -iname "*$rom_no_brkts_temp*" -iregex "$system_extension" -type f 2>/dev/null) 
 
                if [[ -n $filefind ]]; then
                    # Build Array for files
@@ -275,12 +264,12 @@ function file_search() {
                filefind=$(find -iname "$rom_no_brkts*" -iregex "$system_extension" -type f 2>/dev/null)
 
                if [[ -z $filefind ]]; then
-                   rom_no_brkts="${rom_no_brkts//[^[:alnum:].]/\*}"
+                   rom_no_brkts_temp="${rom_no_brkts//[^[:alnum:].]/\*}"
                    for i in "${ignore_list[@]}"; do
-                       rom_no_brkts="${rom_no_brkts//$i/\*}"
+                       rom_no_brkts_temp="${rom_no_brkts_temp//$i/\*}"
                    done
 
-                   filefind=$(find -iname "*$rom_no_brkts*" ! -iregex ".*\.\(srm\|state*\|auto*\|nv\|\hi\|jpg\|jpeg\|png\)" -type f 2>/dev/null) 
+                   filefind=$(find -iname "*$rom_no_brkts_temp*" ! -iregex ".*\.\(srm\|state*\|auto*\|nv\|\hi\|jpg\|jpeg\|png\)" -type f 2>/dev/null) 
 
                fi
 
