@@ -405,8 +405,6 @@ function dialog_romselection() {
 # ----------------------------------------------------------------------------------------------------
 # ------------------------------------ M A I N - P R O G R A M M -------------------------------------
 # ----------------------------------------------------------------------------------------------------
-# ------------------------------------ M A I N - P R O G R A M M -------------------------------------
-# ----------------------------------------------------------------------------------------------------
 
 dialog_error "This programm will check your custom collections and changes pathes to ROM\
              \nThe purpose is clear... We can share now our custom collections, without\
@@ -416,7 +414,7 @@ dialog_error "This programm will check your custom collections and changes pathe
              \n  So you may find Tetris (JUE).gb if the collection name was Tetris.zip\
              \n  you may find mslug.zip located in system FBA if it was in ARCADE\
              \n  you not find Alex Kidd located in MEGADRIVE if it was in MASTERSYSTEM\
-             \n\nAdvanced Search: Searches in base ROM folder for filenames, there will be\
+             \n\nAdvanced Search: Searches in base ROM folder for filenames, there will be\n
              lots of hits, so you can select wanted file manually!
              \n\nRegionChange: Is "same" as Simple Search but lefts first filesearch stage!
              \n\n>>>> Please.... give feedback - Yours cyperghost --- Version $VERSION"
