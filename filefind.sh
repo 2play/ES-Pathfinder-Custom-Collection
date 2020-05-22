@@ -6,7 +6,7 @@
 # iname, iregex vs name, regex is independent of upper lower cases
 #
 
-readonly VERSION="1.10_060918"
+readonly VERSION="1.10_220520"
 readonly TITLE="Pathfinder 4 Custom Collections"
 readonly ROMBASE_DIR="/home/pi/RetroPie/roms"
 readonly COLLECTION_DIR="/opt/retropie/configs/all/emulationstation/collections"
